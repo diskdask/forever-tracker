@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081a22">
+  <meta name="description" content="Diskdask guild statistics and adventures on WoW Forever EU PvP.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <title>Diskdask · Guild Chronicle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell" id="top">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Diskdask Forever Tracker home">
+        <span class="brand-name">Diskdask Forever Tracker</span>
+      </a>
+      <div class="header-right">
+        <span class="realm-chip"><span class="realm-dot"></span> WOW FOREVER <i></i> EU PVP</span>
+        <a class="armory-link" href="https://worldofwarcraft.blizzard.com/en-us/forever/eu/armory/guild/diskdask" target="_blank" rel="noreferrer"><span class="armory-label">OFFICIAL ARMORY</span><span class="armory-short">ARMORY</span> <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-rule"></span>HORDE · EU PVP<span class="eyebrow-rule"></span></p>
+          <h1 id="page-title" class="sr-only">Diskdask Guild Chronicle</h1>
+          <img class="hero-logo" src="assets/diskdask-logo.png" alt="Diskdask">
+          <p class="hero-subtitle">A little record of the trouble we've caused.</p>
+        </div>
+        <div class="hero-stamp" aria-label="Data update status">
+          <span class="stamp-top"><span class="stamp-indicator"></span> GUILD RECORDS</span>
+          <strong id="update-date">Loading…</strong>
+          <span class="stamp-bottom" id="update-note">Fetching the latest armory data</span>
+          <details class="profile-coverage" id="profile-coverage"><summary id="coverage-summary">Checking the guild ledger…</summary><div id="coverage-list"></div></details>
+        </div>
+        <span class="hero-star star-one" aria-hidden="true">✦</span>
+        <span class="hero-star star-two" aria-hidden="true">✧</span>
+      </section>
+
+      <section class="section overview-section" aria-labelledby="overview-title">
+        <div class="section-heading">
+          <div><p class="eyebrow small-eyebrow">THE BIG PICTURE</p><h2 id="overview-title">Guild at a glance</h2></div>
+          <span class="section-note" id="coverage-note">All-time character records</span>
+        </div>
+        <div class="stat-grid" id="guild-stats" aria-live="polite">
+          <div class="stat-card skeleton"></div><div class="stat-card skeleton"></div>
+          <div class="stat-card skeleton"></div><div class="stat-card skeleton"></div>
+          <div class="stat-card skeleton"></div>
+        </div>
+        <div class="class-mix">
+          <div class="class-mix-heading">
+            <span>CLASS MIX</span>
+            <span>Characters per class · hover for exact counts</span>
+          </div>
+          <div class="class-chart-shell">
+            <div class="class-y-axis" id="class-axis" aria-hidden="true"></div>
+            <div class="class-chart" id="class-breakdown" role="list" aria-label="Guild class distribution"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="highlights" aria-labelledby="highlights-title">
+        <div class="section-heading"><div><p class="eyebrow small-eyebrow">THE LATEST CHAPTER</p><h2 id="highlights-title">Around the guild</h2></div><span class="section-note" id="highlight-note">Recent recorded progress</span></div>
+        <p class="story-context" id="story-context">Stories are based on changes between saved guild records. The record date may be later than the in-game moment.</p>
+        <div class="highlight-grid" id="highlight-grid" aria-live="polite"></div>
+      </section>
+      <div class="honours-layout">
+        <section class="section trivia-section" id="awards" aria-labelledby="trivia-title">
+          <div class="section-heading"><div><p class="eyebrow small-eyebrow">THE IMPORTANT RESEARCH</p><h2 id="trivia-title">Small claims to fame</h2></div></div>
+          <div class="segmented" role="group" aria-label="Award period"><button type="button" data-award-period="all" aria-pressed="true">All time</button><button type="button" data-award-period="week" aria-pressed="false">This week</button></div>
+          <p class="section-note" id="award-coverage"></p><div class="trivia-grid" id="trivia-grid" aria-live="polite"></div>
+          <button class="text-button section-action" id="more-awards" type="button" aria-expanded="false">See all 10 awards ↓</button>
+        </section>
+        <section class="section" id="legacy" aria-labelledby="legacy-title">
+          <div class="section-heading"><div><p class="eyebrow small-eyebrow">A LASTING IMPRESSION</p><h2 id="legacy-title">The Legacy ledger</h2></div><span class="legacy-shield" aria-hidden="true">♜</span></div>
+          <p class="section-note">One point per completed challenge · 65 available at launch. Linked characters count once; unlinked rows show only what their profile reports.</p>
+          <div id="legacy-list" aria-live="polite"></div>
+          <button class="text-button section-action" id="more-legacy" type="button" aria-expanded="false">See the full ledger ↓</button>
+          <p class="section-note" id="legacy-coverage"></p>
+        </section>
+      </div>
+      <section id="roster" class="section roster-section" aria-labelledby="roster-title">
+        <div class="section-heading roster-heading">
+          <div><p class="eyebrow small-eyebrow">THE USUAL SUSPECTS</p><h2 id="roster-title">Character chronicles</h2></div>
+          <span class="roster-count" id="roster-count">— characters</span>
+        </div>
+        <div class="squad-switch" role="group" aria-label="Filter roster by squad">
+          <button type="button" class="squad-option active" data-squad-filter="a" aria-pressed="true" title="A-laget: guild ranks 0 through 5">
+            <span>A-laget</span><small id="squad-count-a">— · rank 0–5</small>
+          </button>
+          <button type="button" class="squad-option" data-squad-filter="b" aria-pressed="false" title="B-laget: guild rank 6 and above">
+            <span>B-laget</span><small id="squad-count-b">— · rank 6+</small>
+          </button>
+          <button type="button" class="squad-option" data-squad-filter="all" aria-pressed="false" title="Show all guild members">
+            <span>All guild</span><small id="squad-count-all">—</small>
+          </button>
+        </div>
+        <div class="roster-controls">
+          <label class="search-box"><span aria-hidden="true" class="search-icon">⌕</span><span class="sr-only">Search the roster</span><input id="roster-search" type="search" placeholder="Search guild roster…" autocomplete="off"></label>
+          <label class="filter-label"><span class="sr-only">Filter by class</span><select id="class-filter"><option value="">All classes</option></select></label>
+          <span class="result-count" id="result-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="roster-table">
+            <thead><tr>
+              <th><button class="sort-button" data-sort="name" type="button">CHARACTER <span>↕</span></button></th>
+              <th class="class-column"><button class="sort-button" data-sort="className" type="button">CLASS <span>↕</span></button></th>
+              <th class="level-column"><button class="sort-button active" data-sort="level" type="button" aria-label="Sort by level">LEVEL / XP <span>↓</span></button></th>
+              <th class="profession-column">PROFESSIONS</th>
+              <th class="armory-column"><span class="sr-only">Armory link</span></th>
+            </tr></thead>
+            <tbody id="roster-body"><tr><td class="loading-cell" colspan="5">Reading the guild ledger…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="empty-state" id="empty-state" hidden>No characters match that search.</p>
+      </section>
+
+      <section class="section" id="dungeons" aria-labelledby="dungeon-title">
+        <div class="section-heading"><div><p class="eyebrow small-eyebrow">LEAVE NO BOSS STANDING</p><h2 id="dungeon-title">The dungeon journal</h2></div><span class="section-note" id="dungeon-summary"></span></div>
+        <div class="journal-toolbar"><div class="segmented" role="group" aria-label="Dungeon roster filter"><button type="button" data-dungeon-squad="a" aria-pressed="true">A-laget</button><button type="button" data-dungeon-squad="b" aria-pressed="false">B-laget</button><button type="button" data-dungeon-squad="all" aria-pressed="false">Everyone</button></div><label class="check-label"><input id="all-dungeons" type="checkbox"> Include higher-level dungeons</label></div>
+        <details class="party-picker"><summary>Pick a mixed group <span id="party-count">No characters selected</span></summary><p class="section-note">Choose characters from either squad to compare their records and find a next run.</p><div id="party-options"></div><button type="button" class="text-button" id="clear-party">Clear selection</button></details>
+        <div class="dungeon-scroll" tabindex="0" role="region" aria-label="Dungeon completion records, scroll to see all characters"><table class="dungeon-table" id="dungeon-grid"></table></div>
+        <div class="journal-legend"><span class="clear">✓ Cleared</span><span class="partial">◐ Partial boss record</span><span>— No recorded clear</span><span class="unknown">? Clear rule unverified</span><span>Profile unavailable</span></div>
+        <p class="section-note">A clear is a saved boss record. Dungeon counters aren’t full run histories; retained records carry an asterisk.</p>
+        <div class="next-runs"><div><p class="eyebrow small-eyebrow">ANOTHER ADVENTURE?</p><h3>What’s next?</h3><p class="section-note">Based on levels and unfinished records. Bring your own tank.</p></div><div id="dungeon-suggestions"></div></div>
+      </section>
+      <footer class="site-footer">
+        <span>Made with questionable levels of commitment.</span>
+        <span>Guild records from the <a href="https://worldofwarcraft.blizzard.com/en-us/forever/eu/armory/guild/diskdask" target="_blank" rel="noreferrer">Blizzard armory</a></span>
+      </footer>
+    </main>
+  </div>
+  <div class="load-error" id="load-error" role="alert" hidden></div>
+  <dialog id="record-dialog" aria-labelledby="record-title"><div class="dialog-heading"><h2 id="record-title">Dungeon record</h2><button type="button" class="icon-button" id="close-record" aria-label="Close dungeon record">×</button></div><div id="record-content"></div></dialog>
+  <script src="chronicle.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
