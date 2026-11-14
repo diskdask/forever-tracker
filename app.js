@@ -194,6 +194,7 @@ function visibleMembers() {
 
 function renderRoster() {
   const members = visibleMembers();
+  const detailColspan = window.matchMedia("(max-width: 610px)").matches ? 2 : 5;
   const squadMembers = state.members.filter(m => state.squadFilter === "all" || squadOf(m) === state.squadFilter);
   byId("roster-count").textContent = squadMembers.length + (state.squadFilter === "all" ? " characters" : " in " + squadName(state.squadFilter));
   byId("result-count").textContent = members.length === squadMembers.length ? "" : `Showing ${members.length} of ${squadMembers.length}`;
@@ -207,11 +208,14 @@ function renderRoster() {
       <td class="level-cell"><strong>${m.level ?? '—'}</strong>${xpBar(m)}</td>
       <td class="profession-column"><div class="profession-list">${(m.professions || []).map(p => `<span class="profession-chip">${escapeHTML(p.name)}<em>${number(p.skill)}</em></span>`).join('') || (m.dataAvailable ? '—' : '<span class="profile-unavailable">Profile unavailable</span>')}</div></td>
       <td class="armory-column"><a class="row-armory" href="https://worldofwarcraft.blizzard.com/en-us/forever/eu/armory/character/${encodeURIComponent(m.slug)}" target="_blank" rel="noreferrer" aria-label="${escapeHTML(m.name)} in the official armory">↗</a></td>
-    </tr><tr class="detail-row" ${expanded ? '' : 'hidden'}><td colspan="5">${expanded ? characterDetails(m) : `<div id="detail-${m.id}"></div>`}</td></tr>`;
+    </tr><tr class="detail-row" ${expanded ? '' : 'hidden'}><td colspan="${detailColspan}">${expanded ? characterDetails(m) : `<div id="detail-${m.id}"></div>`}</td></tr>`;
   }).join("");
 }
 
 function bindControls() {
+  const rosterLayout = window.matchMedia("(max-width: 610px)");
+  if (rosterLayout.addEventListener) rosterLayout.addEventListener("change", renderRoster);
+  else window.addEventListener("resize", renderRoster);
   byId("roster-search").addEventListener("input", (event) => {
     state.query = event.target.value;
     renderRoster();

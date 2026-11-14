@@ -4,6 +4,12 @@ from datetime import datetime, timedelta, timezone
 import re
 
 AWARD_IDS = (1518, 114, 918, 94, 1066, 1043, 353, 108, 344, 588)
+PROFESSION_MILESTONES = tuple(range(50, 501, 50))
+FUNNY_STAT_MILESTONES = {
+    1518: (100, 500, 1000), 114: (10, 25, 50), 918: (5, 10, 25), 94: (10, 25, 50),
+    1066: (25, 50, 100), 1043: (25, 50, 100), 353: (25, 50, 100), 108: (100, 500, 1000),
+    344: (25, 100, 250), 588: (100, 500, 1000),
+}
 
 
 def norm(value):
@@ -118,8 +124,46 @@ def observation(member):
             if member.get("legacy", {}).get("available") and not member.get("legacy", {}).get("stale") else None}
 
 
+def _crossed_milestone(before, after, milestones):
+    if not isinstance(before, (int, float)) or isinstance(before, bool):
+        return False
+    if not isinstance(after, (int, float)) or isinstance(after, bool) or after <= before:
+        return False
+    return any(before < milestone <= after for milestone in milestones)
+
+
+def _records_activity(before, after):
+    """Whether this observation is evidence for an activity-feed milestone."""
+    old_level, new_level = before.get("level"), after.get("level")
+    if isinstance(old_level, int) and isinstance(new_level, int) and new_level > old_level:
+        return True
+
+    for key in ("clears", "legacy"):
+        old_values, new_values = before.get(key), after.get(key)
+        if isinstance(old_values, list) and isinstance(new_values, list) and set(new_values) - set(old_values):
+            return True
+
+    old_professions = before.get("professions")
+    new_professions = after.get("professions")
+    if isinstance(old_professions, list) and isinstance(new_professions, list):
+        previous = {str(row.get("name", "")).strip().casefold(): row.get("skill")
+                    for row in old_professions if isinstance(row, dict)}
+        for row in new_professions:
+            if not isinstance(row, dict):
+                continue
+            prior = previous.get(str(row.get("name", "")).strip().casefold())
+            if _crossed_milestone(prior, row.get("skill"), PROFESSION_MILESTONES):
+                return True
+
+    old_stats, new_stats = before.get("stats") or {}, after.get("stats") or {}
+    for key, milestones in FUNNY_STAT_MILESTONES.items():
+        if _crossed_milestone(old_stats.get(str(key)), new_stats.get(str(key)), milestones):
+            return True
+    return False
+
+
 def enrich(snapshot, previous, config):
-    """Retain first and last observations per UTC day for 90 days, keyed by stable ID."""
+    """Retain daily endpoints and recorded activity observations for 90 days."""
     cutoff = datetime.fromisoformat(snapshot["generatedAt"]) - timedelta(days=90)
     for member in snapshot["members"]:
         old = previous.get(str(member["id"]), {})
@@ -137,11 +181,20 @@ def enrich(snapshot, previous, config):
             old.get("xp") if member.get("level") == old.get("level") else None)
         if member.get("dataAvailable") and not member.get("stale"):
             history.append(observation(member))
+        points = sorted({point["at"]: point for point in history}.values(), key=lambda p: p["at"])
+        activity_times = {point["at"] for before, point in zip(points, points[1:])
+                          if _records_activity(before, point)}
         days = {}
-        for point in sorted({point["at"]: point for point in history}.values(), key=lambda p: p["at"]):
+        for point in points:
             if datetime.fromisoformat(point["at"]) >= cutoff:
                 days.setdefault(point["at"][:10], []).append(point)
-        member["history"] = [point for rows in days.values() for point in (rows if len(rows) < 2 else [rows[0], rows[-1]])]
+        member["history"] = []
+        for rows in days.values():
+            if len(rows) <= 2:
+                member["history"].extend(rows)
+            else:
+                retained = [rows[0], *(point for point in rows[1:-1] if point["at"] in activity_times), rows[-1]]
+                member["history"].extend(retained)
     snapshot["schema"] = 2
     snapshot["config"] = config
     snapshot["historyStartedAt"] = min((p["at"] for m in snapshot["members"] for p in m["history"]), default=None)

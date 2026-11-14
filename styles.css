@@ -335,8 +335,9 @@ button.character-link { width: 100%; padding: 6px 0; border: 0; background: none
 .detail-heading h3 { margin: 0; }
 .detail-xp { max-width: 350px; margin: 12px 0; }
 .detail-xp .xp-track { height: 6px; }
-.xp-chart { display: block; width: 100%; max-height: 210px; }
-.xp-chart text { font: 10px var(--font-body); fill: var(--quiet); }
+.xp-chart { display: block; width: 100%; height: auto; overflow: visible; }
+.xp-chart text { font: 14px var(--font-body); fill: var(--quiet); }
+.xp-chart .chart-date { font-size: 14px; }
 .chart-grid { stroke: var(--line); stroke-dasharray: 4 4; }
 .chart-line { stroke: var(--gold-bright); fill: none; stroke-width: 2; }
 .xp-chart circle { fill: var(--gold); stroke: #15120e; stroke-width: 2; }
@@ -412,7 +413,7 @@ button.record-chip:hover { border-color: var(--gold); }
   .detail-columns { grid-template-columns: 1fr; gap: 20px; }
   .detail-heading h3 { font-size: 13px; }
   .detail-heading .segmented button { padding: 6px 9px; font-size: 10px; }
-  .xp-chart { min-height: 145px; }
+  .xp-chart { min-height: 0; }
   .observation-log table th, .observation-log table td { padding: 7px 4px; font-size: 9px; }
 }
 
@@ -564,7 +565,7 @@ body {
 .detail-intro h3 { color: #f4e6c7; }
 .detail-columns { border-color: #365754; }
 .detail-columns h3, .detail-heading h3 { color: #f2e3c4; }
-.xp-chart text { fill: #d1d7c8; font-size: 12px; }
+.xp-chart text { fill: #d1d7c8; font-size: 15px; }
 .chart-grid { stroke: #52706a; }
 .chart-line { stroke: #e8ae5f; }
 .chart-empty { border-color: #496762; color: #dce0d2; }

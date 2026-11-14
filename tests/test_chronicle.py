@@ -7,7 +7,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from chronicle import dungeon_records, enrich, legacy_record, xp_progress
+from chronicle import dungeon_records, enrich, legacy_record, observation, xp_progress
 
 CONFIG = json.loads((ROOT / "chronicle-config.json").read_text())
 SNAPSHOT = json.loads((ROOT / "data.json").read_text())
@@ -124,6 +124,32 @@ class ChronicleTests(unittest.TestCase):
         old = copy.deepcopy(m)
         enrich({"generatedAt": m["dataCollectedAt"], "members": [m]}, {str(m["id"]): old}, CONFIG)
         self.assertEqual([p["at"] for p in m["history"]], ["2026-11-13T00:00:00+00:00", "2026-11-13T12:00:00+00:00"])
+
+    def test_daily_compaction_keeps_event_timestamp_stable_across_later_refreshes(self):
+        old = self.member()
+        level = old["level"]
+        base_at = "2026-11-14T08:00:00+00:00"
+        event_at = "2026-11-14T09:17:00+00:00"
+        old_at = "2026-11-14T10:00:00+00:00"
+        old["dungeons"] = dungeon_records(old, CONFIG["dungeons"])
+        old["xp"] = xp_progress(old, CONFIG)
+        baseline = observation(old)
+        base = {**baseline, "at": base_at, "level": level - 1}
+        event = {**baseline, "at": event_at, "level": level}
+        old["history"] = [base, event]
+        old["level"] = level
+        old["dataCollectedAt"] = event_at
+
+        current = copy.deepcopy(old)
+        current["dataCollectedAt"] = old_at
+        enrich({"generatedAt": old_at, "members": [current]}, {str(old["id"]): old}, CONFIG)
+        self.assertEqual([point["at"] for point in current["history"]], [base_at, event_at, old_at])
+
+        next_at = "2026-11-14T11:00:00+00:00"
+        following = copy.deepcopy(current)
+        following["dataCollectedAt"] = next_at
+        enrich({"generatedAt": next_at, "members": [following]}, {str(current["id"]): current}, CONFIG)
+        self.assertEqual([point["at"] for point in following["history"]], [base_at, event_at, next_at])
 
 
 if __name__ == "__main__":

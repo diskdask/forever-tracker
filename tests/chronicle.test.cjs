@@ -7,14 +7,14 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'data.json')));
 
-function app() {
+function app(width = 1024) {
   const elements = new Map([...fs.readFileSync(path.join(root, 'index.html'), 'utf8').matchAll(/id="([^"]+)"/g)].map(([, id]) => [id, {
     innerHTML: '', textContent: '', checked: false, hidden: id === 'load-error', value: '',
     setAttribute() {}, addEventListener() {}, focus() {}, showModal() { this.open = true; }, close() { this.open = false; },
   }]));
   const documentListeners = {};
   const document = { getElementById: id => elements.get(id), querySelectorAll: () => [], addEventListener(type, handler) { documentListeners[type] = handler; } };
-  const context = vm.createContext({ document, window: { matchMedia: () => ({ matches: false }) }, console, Intl, Date });
+  const context = vm.createContext({ document, window: { innerWidth: width, matchMedia: query => ({ matches: query.includes('max-width: 610px') && width <= 610 }) }, console, Intl, Date });
   vm.runInContext(fs.readFileSync(path.join(root, 'chronicle.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'app.js'), 'utf8').replace(/\nstart\(\);\s*$/, ''), context);
   context.fixture = structuredClone(snapshot);
@@ -29,6 +29,43 @@ test('every chapter renders the real snapshot without exceptions', () => {
   assert.match(elements.get('dungeon-grid').innerHTML, /: Cleared/);
   assert.match(elements.get('dungeon-grid').innerHTML, /Cleared/);
   for (const m of snapshot.members) run(`characterDetails(memberById(${m.id}));`);
+});
+
+test('expanded roster details span only visible columns on mobile and all columns on desktop', () => {
+  const mobile = app(390);
+  mobile.run(`state.squadFilter='all'; chronicle.expanded=state.members.find(m=>m.name==='Hunt Elito').id; renderRoster();`);
+  assert.match(mobile.elements.get('roster-body').innerHTML, /class="detail-row"[^>]*><td colspan="2">/);
+  assert.match(mobile.elements.get('roster-body').innerHTML, /class="character-detail" id="detail-/);
+  const narrow = app(320);
+  narrow.run(`state.squadFilter='all'; chronicle.expanded=state.members.find(m=>m.name==='Hunt Elito').id; renderRoster();`);
+  assert.match(narrow.elements.get('roster-body').innerHTML, /class="detail-row"[^>]*><td colspan="2">/);
+  const desktop = app(1440);
+  desktop.run(`state.squadFilter='all'; chronicle.expanded=state.members.find(m=>m.name==='Hunt Elito').id; renderRoster();`);
+  assert.match(desktop.elements.get('roster-body').innerHTML, /class="detail-row"[^>]*><td colspan="5">/);
+});
+
+test('XP chart labels retain exact low-variation values and explain constant observations', () => {
+  const { run } = app(390);
+  const chart = run(`(() => {
+    const at = Date.parse(fixture.generatedAt);
+    const sample = total => ({at:new Date(at-3600000).toISOString(),level:30,xp:{current:total-1500000,total}});
+    state.members = [{id:900,name:'Chart Test',level:30,xp:{current:1,required:100,percent:1},history:[sample(1726165),{...sample(1726400),at:new Date(at-1000).toISOString()}]}];
+    chronicle.snapshot = fixture;
+    return historyHTML(state.members[0]);
+  })()`);
+  assert.match(chart, /1,726,165/);
+  assert.match(chart, /1,726,400/);
+  assert.match(chart, /235 XP gained/);
+  assert.match(chart, /viewBox="0 0 362 196"/);
+  const flat = run(`(() => {
+    const at = Date.parse(fixture.generatedAt);
+    const sample = offset => ({at:new Date(at+offset).toISOString(),level:30,xp:{current:226165,total:1726165}});
+    state.members = [{id:901,name:'Flat Chart',level:30,xp:{current:1,required:100,percent:1},history:[sample(-3600000),sample(-1000)]}];
+    return historyHTML(state.members[0]);
+  })()`);
+  assert.match(flat, /No XP gain recorded between these observations/);
+  assert.match(flat, /1,726,165 XP at each observation/);
+  assert.equal((flat.match(/<line[^>]+class="chart-grid"/g) || []).length, 1);
 });
 
 test('weekly deltas exclude missing baselines and counter resets', () => {
