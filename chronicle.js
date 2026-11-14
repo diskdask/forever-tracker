@@ -15,6 +15,10 @@ const shortDate = value => {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "Date unavailable" : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
 };
+const shortDateTime = value => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Date and time unavailable" : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(date);
+};
 const memberButton = (m, label = m.name) => `<button type="button" class="name-button" data-member="${m.id}">${escapeHTML(label)}</button>`;
 
 function milestoneCrossed(before, after, milestones) {
@@ -157,7 +161,7 @@ function renderHighlights() {
   };
   byId("highlight-grid").innerHTML = shown.length ? shown.map(e => {
     const category = categories[e.category];
-    return `<article class="activity-row" data-category="${e.category}"><span class="activity-symbol" aria-hidden="true">${category.mark}</span><div class="activity-copy"><span class="activity-category">${category.label}</span><p>${memberButton(e.m)} <span>${escapeHTML(e.headline)}</span></p></div><time datetime="${escapeHTML(new Date(e.at).toISOString())}" title="Snapshot recorded ${escapeHTML(formatDate(e.at))}">Recorded ${escapeHTML(shortDate(e.at))}</time></article>`;
+    return `<article class="activity-row" data-category="${e.category}"><span class="activity-symbol" aria-hidden="true">${category.mark}</span><div class="activity-copy"><span class="activity-category">${category.label}</span><p>${memberButton(e.m)} <span>${escapeHTML(e.headline)}</span></p></div><time datetime="${escapeHTML(new Date(e.at).toISOString())}" title="Snapshot recorded ${escapeHTML(formatDate(e.at))}">Recorded ${escapeHTML(shortDateTime(e.at))}</time></article>`;
   }).join("") : `<article class="chapter-empty"><span class="highlight-mark" aria-hidden="true">✧</span><div><h3>A new chapter starts here.</h3><p>${chronicle.snapshot.historyStartedAt ? `Our saved records begin ${shortDate(chronicle.snapshot.historyStartedAt)}. The latest snapshots don’t show a change yet.` : "The first records are on their way."} Level progress, dungeon clears, profession and Legacy milestones, and notable guild mischief will appear when supported by saved records.</p><a class="text-button" href="#dungeons">Explore the dungeon journal →</a></div></article>`;
   const more = byId("more-activity");
   more.hidden = events.length <= 8;

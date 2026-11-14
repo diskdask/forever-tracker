@@ -85,8 +85,11 @@ test('activity shows eight entries first and its control expands and collapses t
     }));
     renderHighlights();
   `);
-  assert.equal((elements.get('highlight-grid').innerHTML.match(/class="activity-row"/g) || []).length, 8);
-  assert.match(elements.get('highlight-grid').innerHTML, /data-member="1"/);
+  const initialFeed = elements.get('highlight-grid').innerHTML;
+  assert.equal((initialFeed.match(/class="activity-row"/g) || []).length, 8);
+  assert.match(initialFeed, /data-member="1"/);
+  const expectedRecordedTime = run(`shortDateTime(new Date(Date.parse(fixture.generatedAt)-60000).toISOString())`);
+  assert.ok(initialFeed.includes(`Recorded ${expectedRecordedTime}`));
   assert.equal(elements.get('more-activity').textContent, 'Show more activity');
   run('openCharacter = id => { window.lastOpened = id; };');
   const characterLink = { id: '', dataset: { member: '1' }, closest() { return this; } };
