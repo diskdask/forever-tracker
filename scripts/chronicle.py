@@ -107,10 +107,14 @@ def legacy_record(entries, definitions, collected_at):
 def observation(member):
     return {"at": member["dataCollectedAt"], "level": member["level"],
             "xp": member.get("xp"),
+            "professions": [{"name": row.get("name"), "skill": row.get("skill"),
+                             "maxSkill": row.get("maxSkill")} for row in member.get("professions", [])
+                            if isinstance(row, dict)] if isinstance(member.get("professions"), list) else None,
             "stats": {str(key): member.get("stats", {}).get(str(key), {}).get("value") for key in AWARD_IDS},
             "clears": [key for key, value in member["dungeons"].items()
                        if value["status"] == "clear" and not value.get("legacyEvidence")],
-            "legacy": [row["id"] for row in member.get("legacy", {}).get("challenges", []) if row["completed"]]
+            "legacy": [row["id"] for row in member.get("legacy", {}).get("challenges", [])
+                       if row["completed"] and not row.get("conflicting")]
             if member.get("legacy", {}).get("available") and not member.get("legacy", {}).get("stale") else None}
 
 
@@ -124,6 +128,10 @@ def enrich(snapshot, previous, config):
         if not history and old.get("dataAvailable") and not old.get("stale"):
             baseline = {**old, "dungeons": dungeon_records(old, config["dungeons"]), "xp": xp_progress(old, config)}
             history.append(observation(baseline))
+        elif (history and old.get("dataCollectedAt") == history[-1].get("at") and
+              "professions" not in history[-1] and isinstance(old.get("professions"), list)):
+            # Backfill only the matching saved profile observation; this is a real baseline.
+            history[-1] = {**history[-1], "professions": observation(old).get("professions")}
         member["dungeons"] = dungeon_records(member, config["dungeons"])
         member["xp"] = xp_progress(member, config) if not member.get("stale") else (
             old.get("xp") if member.get("level") == old.get("level") else None)

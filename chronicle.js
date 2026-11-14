@@ -1,11 +1,69 @@
 // Chronicle interactions. The shared roster state and formatting helpers live in app.js.
-const chronicle = { snapshot: null, dungeonSquad: "a", party: new Set(), awardPeriod: "all", allAwards: false, allLegacy: false, expanded: null, ranges: {} };
+const chronicle = { snapshot: null, dungeonSquad: "a", party: new Set(), awardPeriod: "all", allAwards: false, allLegacy: false, allActivity: false, expanded: null, ranges: {} };
 const DAY = 86400000;
+const ACTIVITY_PRIORITY = { dungeon: 5, profession: 4, legacy: 4, level: 3, mischief: 1 };
+const PROFESSION_MILESTONES = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
+const FUNNY_STAT_MILESTONES = {
+  1518: [100, 500, 1000], 114: [10, 25, 50], 918: [5, 10, 25], 94: [10, 25, 50],
+  1066: [25, 50, 100], 1043: [25, 50, 100], 353: [25, 50, 100], 108: [100, 500, 1000],
+  344: [25, 100, 250], 588: [100, 500, 1000],
+};
 const recordLabels = { clear: "Cleared", partial: "Partial boss record", none: "No recorded clear", unknown: "Clear rule unverified", unavailable: "Profile unavailable" };
 const recordMarks = { clear: "✓", partial: "◐", none: "—", unknown: "?", unavailable: "?" };
 const memberById = id => state.members.find(m => String(m.id) === String(id));
-const shortDate = value => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
+const shortDate = value => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Date unavailable" : new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(date);
+};
 const memberButton = (m, label = m.name) => `<button type="button" class="name-button" data-member="${m.id}">${escapeHTML(label)}</button>`;
+
+function milestoneCrossed(before, after, milestones) {
+  if (before == null || after == null || !Number.isFinite(Number(before)) || !Number.isFinite(Number(after)) || Number(after) <= Number(before)) return null;
+  return milestones.filter(value => Number(before) < value && Number(after) >= value).at(-1) ?? null;
+}
+
+function detectProfessionMilestone(before, after) {
+  if (!Array.isArray(before) || !Array.isArray(after)) return null;
+  const previous = new Map(before.filter(p => p && typeof p.name === "string").map(p => [p.name.trim().toLocaleLowerCase(), p]));
+  for (const profession of after) {
+    if (!profession || typeof profession.name !== "string") continue;
+    const prior = previous.get(profession.name.trim().toLocaleLowerCase());
+    if (!prior) continue;
+    const skill = milestoneCrossed(prior.skill, profession.skill, PROFESSION_MILESTONES);
+    if (skill !== null) return { name: profession.name, skill };
+  }
+  return null;
+}
+
+function selectLatestActivity(candidates) {
+  const valid = candidates.filter(candidate => Number.isFinite(Date.parse(candidate.at)));
+  if (!valid.length) return null;
+  const latest = Math.max(...valid.map(candidate => Date.parse(candidate.at)));
+  return valid.filter(candidate => Date.parse(candidate.at) === latest)
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0) || (a.sequence || 0) - (b.sequence || 0))[0];
+}
+
+function orderActivityRows(rows) {
+  return [...rows].sort((a, b) => Date.parse(b.at) - Date.parse(a.at) || a.memberOrder - b.memberOrder);
+}
+
+function activityCandidate({ at, category, headline, sequence }) {
+  return { at, category, headline, sequence, priority: ACTIVITY_PRIORITY[category] || 0 };
+}
+
+function funnyMilestoneHeadline(fact, milestone) {
+  if (fact.id === 94) return `abandoned their ${number(milestone)}th quest`;
+  if (fact.id === 1518) return `caught their ${number(milestone)}th fish`;
+  if (fact.id === 108) return `killed their ${number(milestone)}th critter`;
+  if (fact.id === 1066) return `used /lol for the ${number(milestone)}th time`;
+  if (fact.id === 1043) return `rolled Greed ${number(milestone)} times`;
+  if (fact.id === 353) return `used a Hearthstone ${number(milestone)} times`;
+  if (fact.id === 114) return `reached ${number(milestone)} fall-damage deaths`;
+  if (fact.id === 918) return `reached ${number(milestone)} dungeon deaths`;
+  if (fact.id === 344) return `used ${number(milestone)} bandages`;
+  if (fact.id === 588) return `earned ${number(milestone)} honorable kills`;
+  return `reached ${number(milestone)} ${fact.label.toLocaleLowerCase()}`;
+}
 
 function portrait(m) {
   const url = typeof m.avatarUrl === "string" && m.avatarUrl.startsWith("https://render.worldofwarcraft.com/") ? m.avatarUrl : "";
@@ -52,59 +110,59 @@ function renderAwards() {
 }
 
 function renderHighlights() {
-  const cutoff = new Date(chronicle.snapshot.generatedAt).getTime() - 7 * DAY;
-  const byMember = new Map();
-  for (const m of state.members) {
+  const snapshotTime = Date.parse(chronicle.snapshot.generatedAt);
+  const cutoff = Number.isFinite(snapshotTime) ? snapshotTime - 7 * DAY : Infinity;
+  const selected = [];
+  for (const [memberOrder, m] of state.members.entries()) {
     const history = m.history || [];
+    const candidates = [];
+    let sequence = 0;
     for (let i = 1; i < history.length; i++) {
       const prev = history[i - 1], now = history[i];
-      if (new Date(now.at).getTime() < cutoff) continue;
-      const parts = [], headlines = [];
-      let mark = "✦";
-      if (now.level > prev.level) {
-        mark = "↑";
-        headlines.push(`Level ${now.level}`);
-        parts.push(`Level ${prev.level} → ${now.level} in the saved records.`);
+      const recordedAt = Date.parse(now.at);
+      if (!Number.isFinite(recordedAt) || recordedAt < cutoff || recordedAt > snapshotTime) continue;
+      const newClears = (now.clears || []).filter(id => !(prev.clears || []).includes(id));
+      if (newClears.length) {
+        const names = newClears.map(id => chronicle.snapshot.config.dungeons.find(d => d.id === id)?.name).filter(Boolean);
+        if (names.length) candidates.push(activityCandidate({ at: now.at, category: "dungeon", headline: `cleared ${names.join(" and ")}`, sequence: sequence++ }));
       }
-      for (const id of now.clears.filter(id => !prev.clears.includes(id))) {
-        const d = chronicle.snapshot.config.dungeons.find(d => d.id === id);
-        if (d) {
-          if (parts.length === 0) mark = "⚑";
-          headlines.push(`${d.name} clear`);
-          parts.push(`A clear for ${d.name} now appears in the saved records.`);
-        }
-      }
-      if (now.legacy && prev.legacy) {
+      const profession = detectProfessionMilestone(prev.professions, now.professions);
+      if (profession) candidates.push(activityCandidate({ at: now.at, category: "profession", headline: `reached ${number(profession.skill)} ${profession.name}`, sequence: sequence++ }));
+      if (Array.isArray(now.legacy) && Array.isArray(prev.legacy)) {
         const added = now.legacy.filter(id => !prev.legacy.includes(id));
         if (added.length) {
-          const names = (m.legacy?.challenges || []).filter(c => added.includes(c.id) && c.completed).map(c => c.name);
-          if (parts.length === 0) mark = "✦";
-          headlines.push(`${names.length || added.length} Legacy milestone${(names.length || added.length) === 1 ? "" : "s"}`);
-          parts.push(names.length ? `Newly listed Legacy challenges: ${names.join(", ")}.` : `${added.length} Legacy completion${added.length === 1 ? " is" : "s are"} now in the saved records.`);
+          const names = (m.legacy?.challenges || []).filter(c => added.includes(c.id) && c.completed && !c.conflicting).map(c => c.name);
+          const headline = names.length ? `completed ${names.slice(0, 2).join(" and ")}${names.length > 2 ? ` and ${names.length - 2} more Legacy challenges` : ""}` : `recorded ${added.length} Legacy challenge${added.length === 1 ? "" : "s"}`;
+          candidates.push(activityCandidate({ at: now.at, category: "legacy", headline, sequence: sequence++ }));
         }
+      }
+      if (prev.level != null && now.level != null && Number.isFinite(Number(prev.level)) && Number.isFinite(Number(now.level)) && now.level > prev.level) {
+        candidates.push(activityCandidate({ at: now.at, category: "level", headline: `reached level ${now.level}, up from ${prev.level}`, sequence: sequence++ }));
       }
       for (const fact of FACTS) {
         const before = prev.stats?.[String(fact.id)], after = now.stats?.[String(fact.id)];
-        if (before == null || after == null || after <= before) continue;
-        if (parts.length === 0) mark = "☺";
-        if (headlines.length < 3) headlines.push(`+${number(after - before)} ${fact.label.toLocaleLowerCase()}`);
-        parts.push(`${fact.label.toLowerCase()}: +${number(after - before)} in the saved records.`);
-      }
-      if (parts.length) {
-        const item = byMember.get(m.id) || { m, at: now.at, mark, parts: [], headlines: [], priority: 0 };
-        item.at = now.at;
-        if (item.parts.length === 0) item.mark = mark;
-        item.parts.push(...parts);
-        item.headlines.push(...headlines);
-        item.priority = Math.max(item.priority, now.level > prev.level || now.clears.some(id => !prev.clears.includes(id)) ? 2 : now.legacy && prev.legacy && now.legacy.some(id => !prev.legacy.includes(id)) ? 1 : 0);
-        byMember.set(m.id, item);
+        const milestone = milestoneCrossed(before, after, FUNNY_STAT_MILESTONES[fact.id] || []);
+        if (milestone !== null) candidates.push(activityCandidate({ at: now.at, category: "mischief", headline: funnyMilestoneHeadline(fact, milestone), sequence: sequence++ }));
       }
     }
+    const chosen = selectLatestActivity(candidates);
+    if (chosen) selected.push({ ...chosen, m, memberOrder });
   }
-  const events = [...byMember.values()].sort((a, b) => b.priority - a.priority || b.at.localeCompare(a.at) || a.m.name.localeCompare(b.m.name));
-  byId("highlight-note").textContent = "Changes recorded in the last 7 days";
-  byId("story-context").textContent = "These are changes between saved records. Dates show when a snapshot was saved, not necessarily when the adventure happened.";
-  byId("highlight-grid").innerHTML = events.length ? events.slice(0, 6).map(e => `<article class="highlight-card"><span class="highlight-mark" aria-hidden="true">${e.mark}</span><time datetime="${e.at}">Record saved ${shortDate(e.at)}</time><h3>${escapeHTML(e.m.name)} · ${escapeHTML(e.headlines.slice(0, 2).join(" · ") || "A change in the saved records")}</h3><div class="highlight-person">${portrait(e.m)}${memberButton(e.m)}</div><ul class="story-points">${e.parts.slice(0, 5).map(part => `<li>${escapeHTML(part)}</li>`).join("")}</ul></article>`).join("") : `<article class="chapter-empty"><span class="highlight-mark" aria-hidden="true">✧</span><div><h3>A new chapter starts here.</h3><p>${chronicle.snapshot.historyStartedAt ? `Our saved records begin ${shortDate(chronicle.snapshot.historyStartedAt)}. The latest snapshots don’t show a change yet.` : "The first records are on their way."} Level progress, dungeon clears, funny stats, and Legacy milestones will appear here when the saved records change.</p><a class="text-button" href="#dungeons">Explore the dungeon journal →</a></div></article>`;
+  const events = orderActivityRows(selected);
+  const shown = chronicle.allActivity ? events : events.slice(0, 8);
+  const categories = {
+    dungeon: { mark: "⚑", label: "Dungeon clear" }, profession: { mark: "⚒", label: "Profession" },
+    legacy: { mark: "✦", label: "Legacy milestone" }, level: { mark: "↑", label: "Level up" },
+    mischief: { mark: "☺", label: "Guild mischief" },
+  };
+  byId("highlight-grid").innerHTML = shown.length ? shown.map(e => {
+    const category = categories[e.category];
+    return `<article class="activity-row" data-category="${e.category}"><span class="activity-symbol" aria-hidden="true">${category.mark}</span><div class="activity-copy"><span class="activity-category">${category.label}</span><p>${memberButton(e.m)} <span>${escapeHTML(e.headline)}</span></p></div><time datetime="${escapeHTML(new Date(e.at).toISOString())}" title="Snapshot recorded ${escapeHTML(formatDate(e.at))}">Recorded ${escapeHTML(shortDate(e.at))}</time></article>`;
+  }).join("") : `<article class="chapter-empty"><span class="highlight-mark" aria-hidden="true">✧</span><div><h3>A new chapter starts here.</h3><p>${chronicle.snapshot.historyStartedAt ? `Our saved records begin ${shortDate(chronicle.snapshot.historyStartedAt)}. The latest snapshots don’t show a change yet.` : "The first records are on their way."} Level progress, dungeon clears, profession and Legacy milestones, and notable guild mischief will appear when supported by saved records.</p><a class="text-button" href="#dungeons">Explore the dungeon journal →</a></div></article>`;
+  const more = byId("more-activity");
+  more.hidden = events.length <= 8;
+  more.textContent = chronicle.allActivity ? "Show less activity" : "Show more activity";
+  more.setAttribute("aria-expanded", String(chronicle.allActivity));
 }
 
 function dungeonMembers() {
@@ -166,19 +224,11 @@ function showDungeon(id, memberId, suggested = false) {
 }
 
 function legacyAccounts() {
-  const config = chronicle.snapshot.config;
-  const assigned = new Set();
-  const groups = (config.accounts || []).map(a => {
-    const members = (a.characterIds || []).map(memberById).filter(Boolean).filter(m => !assigned.has(m.id));
-    members.forEach(m => assigned.add(m.id));
-    return { name: a.name, linked: true, members };
-  }).filter(a => a.members.length);
-  for (const m of state.members) if (!assigned.has(m.id)) groups.push({ name: m.name, linked: false, members: [m] });
-  return groups.map(a => {
+  return state.members.map(m => {
     const done = new Map();
-    for (const m of a.members) for (const c of m.legacy?.challenges || []) if (c.completed) done.set(c.id, c);
-    const known = a.members.some(m => m.legacy?.available);
-    return { ...a, known, done: [...done.values()], points: done.size, stale: a.members.some(m => m.legacy?.stale || m.stale) };
+    for (const c of m.legacy?.challenges || []) if (c.completed && !c.conflicting) done.set(c.id, c);
+    const known = Boolean(m.legacy?.available);
+    return { name: m.name, linked: false, members: [m], known, done: [...done.values()], points: done.size, stale: Boolean(m.legacy?.stale || m.stale) };
   }).sort((a, b) => Number(b.known) - Number(a.known) || b.points - a.points || a.name.localeCompare(b.name));
 }
 
@@ -186,19 +236,16 @@ function renderLegacy() {
   const accounts = legacyAccounts();
   const shown = chronicle.allLegacy ? accounts : accounts.slice(0, 6);
   const totalPoints = chronicle.snapshot.config.legacyTotalPoints || 65;
-  const lastReward = chronicle.snapshot.config.legacyRewards.at(-1);
-  byId("legacy-list").innerHTML = shown.map((a, i) => {
-    const reward = chronicle.snapshot.config.legacyRewards.find(r => r.points > a.points);
+  byId("legacy-list").innerHTML = shown.map(a => {
     const percent = Math.min(100, a.points / totalPoints * 100);
-    const progressLabel = reward
-      ? `${a.points} / ${totalPoints} ${a.linked ? 'confirmed account points' : 'confirmed points on this character'} · next reward at ${reward.points}: ${escapeHTML(reward.name)} (${reward.points - a.points} more observed)`
-      : `${a.points} / ${totalPoints} ${a.linked ? 'confirmed account points' : 'confirmed points on this character'} · all listed rewards reached at ${lastReward?.points || 0}`;
-    const accountLabel = a.linked
-      ? `${a.members.length} linked character${a.members.length === 1 ? '' : 's'}`
-      : 'Character profile only · account unlinked';
-    return `<div class="legacy-row"><span class="legacy-place">${a.known ? accounts.findIndex(b => b.known && b.points === a.points) + 1 : '—'}</span>${portrait(a.members[0])}<div class="legacy-person">${memberButton(a.members[0], a.name)}<small>${accountLabel}${a.stale ? ' · retained' : ''}</small>${a.known ? `<span class="legacy-progress" title="${a.points} of ${totalPoints} points observed"><span style="width:${percent}%"></span></span><small class="legacy-next-reward">${progressLabel}</small>` : '<small>Achievement data unavailable</small>'}</div><strong class="legacy-points">${a.known ? a.points : '—'}<small>PTS</small></strong></div>`;
+    const member = a.members[0];
+    const status = `Character records only${a.stale ? " · retained" : a.known ? "" : " · unavailable"}`;
+    const points = a.known ? `${a.points} / ${totalPoints}` : `— / ${totalPoints}`;
+    const progress = a.known
+      ? `<span class="legacy-progress" role="progressbar" aria-label="${escapeHTML(a.name)} Legacy points" aria-valuemin="0" aria-valuemax="${totalPoints}" aria-valuenow="${a.points}" title="${a.points} of ${totalPoints} points confirmed"><span style="width:${percent}%"></span></span>`
+      : `<span class="legacy-progress" title="Achievement data unavailable"><span></span></span>`;
+    return `<div class="legacy-row">${portrait(member)}<div class="legacy-person">${memberButton(member, a.name)}<small>${status}</small></div><div class="legacy-progress-column"><strong class="legacy-points">${points}</strong>${progress}</div></div>`;
   }).join("");
-  byId("legacy-coverage").textContent = `${accounts.filter(a => a.known).length}/${accounts.length} entries with achievement data. Legacy points are account-wide; unlinked character profiles may omit points earned on other alts. Conflicting completion records are excluded.`;
   byId("more-legacy").textContent = chronicle.allLegacy ? "Show leading entries ↑" : "See the full ledger ↓";
   byId("more-legacy").setAttribute("aria-expanded", String(chronicle.allLegacy));
   byId("more-legacy").hidden = accounts.length <= 6;
@@ -282,6 +329,11 @@ function initChronicle(snapshot) {
       chronicle.awardPeriod = button.dataset.awardPeriod;
       document.querySelectorAll('[data-award-period]').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
       renderAwards();
+    }
+    if (button.id === "more-activity") {
+      chronicle.allActivity = !chronicle.allActivity;
+      renderHighlights();
+      byId("more-activity").focus();
     }
   });
   byId("all-dungeons").addEventListener("change", renderDungeons);

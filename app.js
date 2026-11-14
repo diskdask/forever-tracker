@@ -40,6 +40,21 @@ function formatDate(value) {
     : { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
+function relativeAge(value, now = Date.now()) {
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp) || !Number.isFinite(now)) return "Update age unavailable";
+  const age = Math.max(0, now - timestamp);
+  if (age < 60_000) return "Just now";
+  if (age < 60 * 60_000) return `${Math.floor(age / 60_000)} min ago`;
+  if (age < 24 * 60 * 60_000) return `${Math.floor(age / (60 * 60_000))} ${Math.floor(age / (60 * 60_000)) === 1 ? "hour" : "hours"} ago`;
+  const days = Math.floor(age / 86_400_000);
+  return days <= 1 ? "Yesterday" : `${days} days ago`;
+}
+
+function updateRelativeAge(value) {
+  byId("update-relative").textContent = `Updated ${relativeAge(value)}`;
+}
+
 function stat(member, id) {
   return member.stats?.[String(id)]?.value ?? null;
 }
@@ -235,6 +250,15 @@ async function start() {
     initChronicle(snapshot);
     byId("update-date").textContent = formatDate(snapshot.generatedAt);
     byId("update-date").title = "Guild snapshot generated " + formatDate(snapshot.generatedAt) + ".";
+    if (Number.isFinite(Date.parse(snapshot.generatedAt))) {
+      byId("update-date").dateTime = new Date(snapshot.generatedAt).toISOString();
+    } else {
+      byId("update-relative").textContent = "Update age unavailable";
+    }
+    if (Number.isFinite(Date.parse(snapshot.generatedAt))) {
+      updateRelativeAge(snapshot.generatedAt);
+      window.setInterval(() => updateRelativeAge(snapshot.generatedAt), 60_000);
+    }
     const stale = snapshot.staleCount || 0;
     const missing = snapshot.missingCount || 0;
     const notes = [];
@@ -251,6 +275,7 @@ async function start() {
     renderTrivia();
     renderRoster();
   } catch (error) {
+    byId("update-relative").textContent = "Update age unavailable";
     byId("update-date").textContent = "Records unavailable";
     byId("update-note").textContent = "Refresh the page to try again.";
     byId("guild-stats").innerHTML = "";

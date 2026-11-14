@@ -99,6 +99,22 @@ class ChronicleTests(unittest.TestCase):
         self.assertEqual(current["history"], old["history"])
         self.assertIsNone(current["xp"])
 
+    def test_profession_history_uses_matching_saved_profile_as_baseline(self):
+        old = self.member()
+        old["professions"] = [{"name": "Engineering", "skill": 148, "maxSkill": 300}]
+        old["dataCollectedAt"] = "2026-11-14T05:00:00+00:00"
+        old["history"] = [{"at": old["dataCollectedAt"], "level": old["level"], "xp": old["xp"],
+                           "stats": {}, "clears": [], "legacy": []}]
+        current = copy.deepcopy(old)
+        current["professions"][0]["skill"] = 152
+        current["dataCollectedAt"] = "2026-11-14T06:00:00+00:00"
+        snapshot = {"generatedAt": current["dataCollectedAt"], "members": [current]}
+
+        enrich(snapshot, {str(old["id"]): old}, CONFIG)
+
+        self.assertEqual(current["history"][-2]["professions"][0]["skill"], 148)
+        self.assertEqual(current["history"][-1]["professions"][0]["skill"], 152)
+
     def test_daily_compaction_retains_endpoints_and_prunes_old_observations(self):
         m = self.member()
         base = copy.deepcopy(m["history"][0])

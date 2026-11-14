@@ -34,7 +34,8 @@
         </div>
         <div class="hero-stamp" aria-label="Data update status">
           <span class="stamp-top"><span class="stamp-indicator"></span> GUILD RECORDS</span>
-          <strong id="update-date">Loading…</strong>
+          <strong id="update-relative">Loading…</strong>
+          <time class="stamp-absolute" id="update-date">Loading…</time>
           <span class="stamp-bottom" id="update-note">Fetching the latest armory data</span>
           <details class="profile-coverage" id="profile-coverage"><summary id="coverage-summary">Checking the guild ledger…</summary><div id="coverage-list"></div></details>
         </div>
@@ -65,25 +66,11 @@
       </section>
 
       <section class="section" id="highlights" aria-labelledby="highlights-title">
-        <div class="section-heading"><div><p class="eyebrow small-eyebrow">THE LATEST CHAPTER</p><h2 id="highlights-title">Around the guild</h2></div><span class="section-note" id="highlight-note">Recent recorded progress</span></div>
-        <p class="story-context" id="story-context">Stories are based on changes between saved guild records. The record date may be later than the in-game moment.</p>
+        <div class="section-heading"><div><p class="eyebrow small-eyebrow">THE LATEST CHAPTER</p><h2 id="highlights-title">Around the guild</h2></div></div>
+        <p class="story-context">Latest discoveries from saved guild records.</p>
         <div class="highlight-grid" id="highlight-grid" aria-live="polite"></div>
+        <button class="text-button section-action" id="more-activity" type="button" aria-expanded="false" hidden>Show more activity</button>
       </section>
-      <div class="honours-layout">
-        <section class="section trivia-section" id="awards" aria-labelledby="trivia-title">
-          <div class="section-heading"><div><p class="eyebrow small-eyebrow">THE IMPORTANT RESEARCH</p><h2 id="trivia-title">Small claims to fame</h2></div></div>
-          <div class="segmented" role="group" aria-label="Award period"><button type="button" data-award-period="all" aria-pressed="true">All time</button><button type="button" data-award-period="week" aria-pressed="false">This week</button></div>
-          <p class="section-note" id="award-coverage"></p><div class="trivia-grid" id="trivia-grid" aria-live="polite"></div>
-          <button class="text-button section-action" id="more-awards" type="button" aria-expanded="false">See all 10 awards ↓</button>
-        </section>
-        <section class="section" id="legacy" aria-labelledby="legacy-title">
-          <div class="section-heading"><div><p class="eyebrow small-eyebrow">A LASTING IMPRESSION</p><h2 id="legacy-title">The Legacy ledger</h2></div><span class="legacy-shield" aria-hidden="true">♜</span></div>
-          <p class="section-note">One point per completed challenge · 65 available at launch. Linked characters count once; unlinked rows show only what their profile reports.</p>
-          <div id="legacy-list" aria-live="polite"></div>
-          <button class="text-button section-action" id="more-legacy" type="button" aria-expanded="false">See the full ledger ↓</button>
-          <p class="section-note" id="legacy-coverage"></p>
-        </section>
-      </div>
       <section id="roster" class="section roster-section" aria-labelledby="roster-title">
         <div class="section-heading roster-heading">
           <div><p class="eyebrow small-eyebrow">THE USUAL SUSPECTS</p><h2 id="roster-title">Character chronicles</h2></div>
@@ -129,6 +116,20 @@
         <p class="section-note">A clear is a saved boss record. Dungeon counters aren’t full run histories; retained records carry an asterisk.</p>
         <div class="next-runs"><div><p class="eyebrow small-eyebrow">ANOTHER ADVENTURE?</p><h3>What’s next?</h3><p class="section-note">Based on levels and unfinished records. Bring your own tank.</p></div><div id="dungeon-suggestions"></div></div>
       </section>
+      <div class="honours-layout">
+        <section class="section trivia-section" id="awards" aria-labelledby="trivia-title">
+          <div class="section-heading"><div><p class="eyebrow small-eyebrow">THE IMPORTANT RESEARCH</p><h2 id="trivia-title">Small claims to fame</h2></div></div>
+          <div class="segmented" role="group" aria-label="Award period"><button type="button" data-award-period="all" aria-pressed="true">All time</button><button type="button" data-award-period="week" aria-pressed="false">This week</button></div>
+          <p class="section-note" id="award-coverage"></p><div class="trivia-grid" id="trivia-grid" aria-live="polite"></div>
+          <button class="text-button section-action" id="more-awards" type="button" aria-expanded="false">See all 10 awards ↓</button>
+        </section>
+        <section class="section" id="legacy" aria-labelledby="legacy-title">
+          <div class="section-heading"><div><p class="eyebrow small-eyebrow">A LASTING IMPRESSION</p><h2 id="legacy-title">The Legacy ledger</h2></div><span class="legacy-shield" aria-hidden="true">♜</span></div>
+          <div id="legacy-list" aria-live="polite"></div>
+          <button class="text-button section-action" id="more-legacy" type="button" aria-expanded="false">See the full ledger ↓</button>
+          <p class="section-note legacy-account-note">Unlinked characters show only points confirmed on their profile. Account totals may be higher.</p>
+        </section>
+      </div>
       <footer class="site-footer">
         <span>Made with questionable levels of commitment.</span>
         <span>Guild records from the <a href="https://worldofwarcraft.blizzard.com/en-us/forever/eu/armory/guild/diskdask" target="_blank" rel="noreferrer">Blizzard armory</a></span>

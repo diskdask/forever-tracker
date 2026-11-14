@@ -1,6 +1,8 @@
 name: Refresh and publish Diskdask Chronicle
 
 on:
+  push:
+    branches: [main]
   schedule:
     # Run hourly away from the top of the hour (UTC).
     - cron: "17 * * * *"

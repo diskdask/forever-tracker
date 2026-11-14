@@ -747,7 +747,7 @@ body {
   }
   .hero-copy, .hero-stamp { grid-column: 1; }
   .hero-copy { width: 100%; }
-  .hero-logo { width: 100%; max-width: 430px; }
+  .hero-logo { width: min(calc(100vw - 52px), 430px); min-width: 0; max-width: 100%; }
   .hero h1 { font-size: 1px; }
   .hero-stamp {
     justify-self: center;
@@ -769,4 +769,83 @@ body {
   .grid-character { gap: 3px; }
   .grid-character .character-avatar { width: 26px; height: 26px; }
   .grid-character > span:nth-child(2) { font-size: 9px; }
+}
+
+/* Compact saved activity and per-character Legacy records. */
+.hero-stamp { opacity: .82; }
+.hero-stamp #update-relative { color: #e1d2ae; font-size: 13px; font-weight: 700; letter-spacing: 0; }
+.hero-stamp .stamp-absolute { display: block; margin-top: 3px; color: #b5c0b4; font-size: 11px; line-height: 1.4; }
+.story-context { margin: -5px 0 10px; color: #aaa194; font-size: 11px; line-height: 1.5; }
+.highlight-grid { display: flex; flex-direction: column; gap: 0; }
+.activity-row {
+  --activity-color: var(--gold-bright);
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 59px;
+  padding: 8px 3px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.activity-row:first-child { border-top: 1px solid var(--line-soft); }
+.activity-row[data-category="dungeon"] { --activity-color: #b6a0e6; }
+.activity-row[data-category="profession"] { --activity-color: #83cabb; }
+.activity-row[data-category="legacy"], .activity-row[data-category="level"] { --activity-color: var(--gold-bright); }
+.activity-row[data-category="mischief"] { --activity-color: #d9956f; }
+.activity-symbol {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border: 1px solid color-mix(in srgb, var(--activity-color) 45%, transparent);
+  border-radius: 50%;
+  color: var(--activity-color);
+  background: color-mix(in srgb, var(--activity-color) 8%, transparent);
+  font: 600 13px var(--font-display);
+}
+.activity-copy { min-width: 0; }
+.activity-category { color: var(--activity-color); font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.activity-copy p { margin: 1px 0 0; color: var(--text); font-size: 13px; line-height: 1.45; }
+.activity-copy .name-button { color: #f0dfb5; font-size: inherit; font-weight: 700; }
+.activity-copy .name-button:hover { color: var(--gold-bright); }
+.activity-row time { color: #aaa194; font-size: 11px; line-height: 1.4; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#highlights .chapter-empty { border: 1px solid var(--line); background: linear-gradient(145deg, #1d211e, #171916); }
+#highlights .chapter-empty h3 { color: var(--text); }
+#highlights .chapter-empty p { color: var(--muted); }
+#highlights .chapter-empty .text-button { color: var(--gold-bright); }
+
+.legacy-row {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) minmax(105px, 31%);
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-radius: 0;
+  color: var(--text);
+  background: transparent;
+}
+.legacy-row:first-child { border-top: 1px solid var(--line-soft); }
+.legacy-row .character-avatar { width: 28px; height: 28px; flex-basis: 28px; }
+.legacy-person { min-width: 0; color: var(--text); font-size: 12px; }
+.legacy-person .name-button { color: #f0dfb5; font-size: 13px; }
+.legacy-person > small { display: block; margin-top: 2px; color: #aaa194; font-size: 10px; line-height: 1.4; }
+.legacy-progress-column { min-width: 0; }
+.legacy-points { display: block; color: var(--gold-bright); font: 600 14px/1.3 var(--font-body); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.legacy-progress { display: block; width: 100%; max-width: none; height: 4px; margin-top: 5px; overflow: hidden; border-radius: 2px; background: #393229; }
+.legacy-progress > span { display: block; height: 100%; background: linear-gradient(90deg, #598f80, var(--gold-bright)); }
+.legacy-account-note { margin-top: 14px; color: #aaa194; font-size: 11px; line-height: 1.55; }
+
+@media (max-width: 520px) {
+  .activity-row { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; min-height: 0; padding: 10px 1px; }
+  .activity-symbol { width: 26px; height: 26px; }
+  .activity-copy p { font-size: 12px; }
+  .activity-row time { grid-column: 2; margin-top: -4px; text-align: left; font-size: 10px; }
+  .legacy-row { grid-template-columns: 27px minmax(0, 1fr) minmax(84px, 31%); gap: 7px; padding: 9px 0; }
+  .legacy-row .character-avatar { width: 26px; height: 26px; flex-basis: 26px; }
+  .legacy-person .name-button { font-size: 12px; }
+  .legacy-person > small { font-size: 9px; }
+  .legacy-points { font-size: 12px; }
 }
