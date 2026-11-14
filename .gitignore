@@ -1,0 +1,17 @@
+# Local credentials
+.env
+.env.*
+!.env.example
+
+# Local caches and Python-generated files
+.cache/
+__pycache__/
+*.py[cod]
+*.tmp
+
+# Finder metadata
+.DS_Store
+
+# Raw research snapshots are not part of the public site or refresh job
+research/
+research.md

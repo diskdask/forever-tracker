@@ -1,0 +1,79 @@
+name: Refresh and publish Diskdask Chronicle
+
+on:
+  schedule:
+    # Run hourly away from the top of the hour (UTC).
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: diskdask-chronicle-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the default branch
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Restore achievement definition cache
+        uses: actions/cache@v5
+        with:
+          path: .cache/achievement-definitions.json
+          key: legacy-definitions-${{ runner.os }}-${{ hashFiles('chronicle-config.json') }}-${{ github.run_id }}
+          restore-keys: |
+            legacy-definitions-${{ runner.os }}-${{ hashFiles('chronicle-config.json') }}-
+
+      - name: Refresh the guild snapshot
+        run: python scripts/refresh_snapshot.py
+        env:
+          BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+          BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+
+      - name: Commit the refreshed snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          if git diff --cached --quiet; then
+            echo "No snapshot changes to commit."
+          else
+            git commit -m "Refresh guild snapshot"
+            git push
+          fi
+
+      - name: Prepare the public site files
+        run: |
+          mkdir -p "$RUNNER_TEMP/diskdask-site/assets"
+          cp index.html styles.css app.js chronicle.js data.json favicon.svg "$RUNNER_TEMP/diskdask-site/"
+          cp assets/diskdask-logo.png "$RUNNER_TEMP/diskdask-site/assets/"
+
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/diskdask-site
+
+  deploy:
+    needs: refresh
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

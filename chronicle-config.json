@@ -1,0 +1,513 @@
+{
+  "dungeons": [
+    {
+      "name": "Ragefire Chasm",
+      "min": 13,
+      "max": 18,
+      "territory": "HORDE",
+      "twin": "Hall of Thanes",
+      "id": "ragefire-chasm",
+      "finalBosses": [
+        "Bazzalan"
+      ],
+      "aliases": [
+        "Ragefire Chasm"
+      ]
+    },
+    {
+      "name": "Hall of Thanes",
+      "min": 13,
+      "max": 18,
+      "forever": true,
+      "territory": "ALLIANCE",
+      "twin": "Ragefire Chasm",
+      "id": "hall-of-thanes",
+      "finalBosses": [],
+      "aliases": [
+        "Hall of Thanes"
+      ]
+    },
+    {
+      "name": "Wailing Caverns",
+      "min": 15,
+      "max": 24,
+      "id": "wailing-caverns",
+      "finalBosses": [
+        "Mutanus the Devourer"
+      ],
+      "aliases": [
+        "Wailing Caverns"
+      ]
+    },
+    {
+      "name": "Ruins of Lordaeron",
+      "min": 15,
+      "max": 20,
+      "forever": true,
+      "territory": "HORDE",
+      "id": "ruins-of-lordaeron",
+      "finalBosses": [
+        "Rath'mael"
+      ],
+      "aliases": [
+        "Ruins of Lordaeron"
+      ]
+    },
+    {
+      "name": "The Deadmines",
+      "min": 17,
+      "max": 26,
+      "id": "the-deadmines",
+      "finalBosses": [
+        "Edwin VanCleef"
+      ],
+      "aliases": [
+        "Deadmines"
+      ]
+    },
+    {
+      "name": "Shadowfang Keep",
+      "min": 20,
+      "max": 30,
+      "id": "shadowfang-keep",
+      "finalBosses": [
+        "Archmage Arugal"
+      ],
+      "aliases": [
+        "Shadowfang Keep"
+      ]
+    },
+    {
+      "name": "Blackfathom Deeps",
+      "min": 24,
+      "max": 32,
+      "id": "blackfathom-deeps",
+      "finalBosses": [
+        "Aku'mai"
+      ],
+      "aliases": [
+        "Blackfathom Deeps"
+      ]
+    },
+    {
+      "name": "Stormwind Stockade",
+      "min": 24,
+      "max": 32,
+      "territory": "ALLIANCE",
+      "id": "stormwind-stockade",
+      "finalBosses": [],
+      "aliases": [
+        "Stormwind Stockade"
+      ]
+    },
+    {
+      "name": "Excavation Site: Wetlands",
+      "min": 24,
+      "max": 29,
+      "forever": true,
+      "id": "excavation-site",
+      "finalBosses": [],
+      "aliases": [
+        "Excavation Site"
+      ],
+      "legacyCriteria": ["Excavation Site: Wetlands"]
+    },
+    {
+      "name": "City of Dalaran",
+      "min": 28,
+      "max": 33,
+      "forever": true,
+      "id": "city-of-dalaran",
+      "finalBosses": [
+        "Shade of the Archmage"
+      ],
+      "aliases": [
+        "City of Dalaran"
+      ]
+    },
+    {
+      "name": "Gnomeregan",
+      "min": 29,
+      "max": 38,
+      "id": "gnomeregan",
+      "finalBosses": [
+        "Mekgineer Thermaplugg"
+      ],
+      "aliases": [
+        "Gnomeregan"
+      ]
+    },
+    {
+      "name": "Razorfen Kraul",
+      "min": 29,
+      "max": 38,
+      "id": "razorfen-kraul",
+      "finalBosses": [
+        "Charlga Razorflank"
+      ],
+      "aliases": [
+        "Razorfen Kraul"
+      ]
+    },
+    {
+      "name": "Scarlet Monastery: Graveyard",
+      "min": 30,
+      "max": 38,
+      "id": "scarlet-monastery-graveyard",
+      "finalBosses": [
+        "Bloodmage Thalnos"
+      ],
+      "aliases": [
+        "Scarlet Monastery"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Scarlet Monastery: Library",
+      "min": 33,
+      "max": 41,
+      "id": "scarlet-monastery-library",
+      "finalBosses": [
+        "Arcanist Doan"
+      ],
+      "aliases": [
+        "Scarlet Monastery"
+      ],
+      "wing": true
+    },
+    {
+      "name": "The Drowned City",
+      "min": 35,
+      "max": 40,
+      "forever": true,
+      "id": "the-drowned-city",
+      "finalBosses": [],
+      "aliases": [
+        "The Drowned City"
+      ]
+    },
+    {
+      "name": "Scarlet Monastery: Armory",
+      "min": 36,
+      "max": 44,
+      "id": "scarlet-monastery-armory",
+      "finalBosses": [
+        "Herod"
+      ],
+      "aliases": [
+        "Scarlet Monastery"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Razorfen Downs",
+      "min": 37,
+      "max": 46,
+      "id": "razorfen-downs",
+      "finalBosses": [
+        "Amnennar the Coldbringer"
+      ],
+      "aliases": [
+        "Razorfen Downs"
+      ]
+    },
+    {
+      "name": "Scarlet Monastery: Cathedral",
+      "min": 38,
+      "max": 46,
+      "id": "scarlet-monastery-cathedral",
+      "finalBosses": [
+        "High Inquisitor Whitemane",
+        "Scarlet Commander Mograine"
+      ],
+      "aliases": [
+        "Scarlet Monastery"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Krol'dok Stronghold",
+      "min": 40,
+      "max": 45,
+      "forever": true,
+      "id": "krol-dok-stronghold",
+      "finalBosses": [],
+      "aliases": [
+        "Krol'dok Stronghold"
+      ]
+    },
+    {
+      "name": "Uldaman",
+      "min": 41,
+      "max": 51,
+      "id": "uldaman",
+      "finalBosses": [],
+      "aliases": [
+        "Uldaman"
+      ]
+    },
+    {
+      "name": "Zul'Farrak",
+      "min": 44,
+      "max": 54,
+      "id": "zul-farrak",
+      "finalBosses": [],
+      "aliases": [
+        "Zul'Farrak"
+      ]
+    },
+    {
+      "name": "Maraudon",
+      "min": 46,
+      "max": 55,
+      "id": "maraudon",
+      "finalBosses": [],
+      "aliases": [
+        "Maraudon"
+      ]
+    },
+    {
+      "name": "Alcaz Prison",
+      "min": 48,
+      "max": 53,
+      "forever": true,
+      "id": "alcaz-prison",
+      "finalBosses": [],
+      "aliases": [
+        "Alcaz Prison"
+      ]
+    },
+    {
+      "name": "Sunken Temple",
+      "min": 50,
+      "max": 60,
+      "id": "sunken-temple",
+      "finalBosses": [],
+      "aliases": [
+        "Sunken Temple"
+      ]
+    },
+    {
+      "name": "Blackrock Depths",
+      "min": 52,
+      "max": 60,
+      "id": "blackrock-depths",
+      "finalBosses": [],
+      "aliases": [
+        "Blackrock Depths"
+      ]
+    },
+    {
+      "name": "Dire Maul: East",
+      "min": 54,
+      "max": 60,
+      "id": "dire-maul-east",
+      "finalBosses": [
+        "Alzzin the Wildshaper"
+      ],
+      "aliases": [
+        "Dire Maul"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Lower Blackrock Spire",
+      "min": 55,
+      "max": 60,
+      "id": "lower-blackrock-spire",
+      "finalBosses": [
+        "Overlord Wyrmthalak"
+      ],
+      "aliases": [
+        "Blackrock Spire"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Blackmaw Hold",
+      "min": 55,
+      "max": 60,
+      "forever": true,
+      "id": "blackmaw-hold",
+      "finalBosses": [],
+      "aliases": [
+        "Blackmaw Hold"
+      ]
+    },
+    {
+      "name": "Dire Maul: West",
+      "min": 56,
+      "max": 60,
+      "id": "dire-maul-west",
+      "finalBosses": [
+        "Prince Tortheldrin"
+      ],
+      "aliases": [
+        "Dire Maul"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Dire Maul: North",
+      "min": 56,
+      "max": 60,
+      "id": "dire-maul-north",
+      "finalBosses": [
+        "King Gordok"
+      ],
+      "aliases": [
+        "Dire Maul"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Scholomance",
+      "min": 58,
+      "max": 60,
+      "id": "scholomance",
+      "finalBosses": [],
+      "aliases": [
+        "Scholomance"
+      ]
+    },
+    {
+      "name": "Stratholme: Main Gate",
+      "min": 58,
+      "max": 60,
+      "id": "stratholme-main-gate",
+      "finalBosses": [
+        "Balnazzar"
+      ],
+      "aliases": [
+        "Stratholme"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Stratholme: Service Gate",
+      "min": 58,
+      "max": 60,
+      "id": "stratholme-service-gate",
+      "finalBosses": [
+        "Baron Rivendare"
+      ],
+      "aliases": [
+        "Stratholme"
+      ],
+      "wing": true
+    },
+    {
+      "name": "Shaper's Terrace",
+      "min": 58,
+      "max": 60,
+      "forever": true,
+      "id": "shaper-s-terrace",
+      "finalBosses": [],
+      "aliases": [
+        "Shaper's Terrace"
+      ]
+    },
+    {
+      "name": "Upper Blackrock Spire",
+      "min": 59,
+      "max": 60,
+      "id": "upper-blackrock-spire",
+      "finalBosses": [
+        "General Drakkisath"
+      ],
+      "aliases": [
+        "Blackrock Spire"
+      ],
+      "wing": true
+    }
+  ],
+  "sources": {
+    "dungeons": "https://github.com/Klippan-Forever/tracker/blob/main/dungeons.json",
+    "xp": "https://realmfirst.net/world-of-warcraft-forever/leveling-guide/wow-forever-xp-per-level/",
+    "legacy": "https://news.blizzard.com/en-us/article/24307383/get-to-know-the-world-of-warcraft-forever-legacy-system"
+  },
+  "xpToNextLevel": [
+    0,
+    400,
+    900,
+    1400,
+    2100,
+    2800,
+    3600,
+    4500,
+    5400,
+    6500,
+    7600,
+    8800,
+    10100,
+    11400,
+    12900,
+    14400,
+    16000,
+    17700,
+    19400,
+    21300,
+    23200,
+    25200,
+    27300,
+    29400,
+    31700,
+    34000,
+    36400,
+    38900,
+    41400,
+    44300,
+    47400,
+    50800,
+    54500,
+    58600,
+    62800,
+    67100,
+    71600,
+    76100,
+    80800,
+    85700,
+    90700,
+    95800,
+    101000,
+    106300,
+    111800,
+    117500,
+    123200,
+    129100,
+    135100,
+    141200,
+    147500,
+    153900,
+    160400,
+    167100,
+    173900,
+    180800,
+    187900,
+    195000,
+    202300,
+    209800,
+    0
+  ],
+  "levelCap": 60,
+  "legacyRewards": [
+    {
+      "points": 15,
+      "name": "Replica Ironforge Air Rifle"
+    },
+    {
+      "points": 25,
+      "name": "Spectral Bear Cub"
+    },
+    {
+      "points": 40,
+      "name": "Spectral Bear Tabard"
+    },
+    {
+      "points": 55,
+      "name": "Reins of the Spectral Bear"
+    }
+  ],
+  "legacyTotalPoints": 65,
+  "accounts": []
+}
